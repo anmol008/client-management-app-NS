@@ -12,13 +12,17 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { DashboardContent } from "@/components/DashboardContent";
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
+import Subscriptions from "./pages/Subscriptions";
+import Products from "./pages/Products";
+import Clients from "./pages/Clients";
+import Licenses from "./pages/Licenses";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ThemeProvider defaultTheme="dark">
+      <ThemeProvider defaultTheme="light">
         <div className="min-h-screen w-full">
           <BrowserRouter>
             <AuthProvider>
@@ -34,6 +38,26 @@ const App = () => (
                 {/* Protected routes with persistent layout */}
                 <Route element={<AuthLayout protected withHeader />}>
                   <Route path="/dashboard" element={<MainLayout><DashboardContent /></MainLayout>} />
+                </Route>
+
+                <Route element={<AuthLayout protected withHeader />}>
+                  <Route path="/subscriptions" element={<MainLayout><Subscriptions /></MainLayout>} />
+                </Route>
+
+                <Route element={<AuthLayout protected withHeader />}>
+                  <Route path="/products" element={<MainLayout><Products /></MainLayout>} />
+                </Route>
+
+                <Route element={<AuthLayout protected withHeader />}>
+                  <Route path="/clients" element={<MainLayout><Clients /></MainLayout>} />
+                </Route>
+
+                <Route element={<AuthLayout protected withHeader />}>
+                  <Route path="/licenses" element={<MainLayout><Licenses /></MainLayout>} />
+                </Route>
+
+                <Route element={<AuthLayout protected withHeader />}>
+                  <Route path="/settings" element={<MainLayout><Licenses /></MainLayout>} />
                 </Route>
 
                 {/* Redirect route */}

@@ -28,7 +28,7 @@ const menuItems = [
   { title: "Products", url: "/products", icon: Package },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Licenses", url: "/licenses", icon: CreditCard },
-  { title: "Settings", url: "/settings", icon: Settings },
+  // { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -77,12 +77,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-border">
+      {/* <SidebarFooter className="p-4 border-t border-border">
         <Button variant="outline" className="w-full justify-start">
           <LogOut className="h-4 w-4 mr-2" />
           Sign Out
         </Button>
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
   );
 }
