@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,59 +9,17 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Product {
-  main_app_id: number;
-  main_app_name: string;
-  main_app_version: string;
-  main_app_code: string;
-  main_app_model_no: string;
-  main_app_desc: string;
-  is_active: boolean;
-}
+import { productApi, Product } from "@/services/api";
 
 const Products = () => {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>([
-    {
-      main_app_id: 1,
-      main_app_name: "DataGPT",
-      main_app_version: "2.1.0",
-      main_app_code: "DGPT",
-      main_app_model_no: "DGPT-001",
-      main_app_desc: "AI-powered data analysis and insights platform",
-      is_active: true,
-    },
-    {
-      main_app_id: 2,
-      main_app_name: "Testament",
-      main_app_version: "1.5.2",
-      main_app_code: "TEST",
-      main_app_model_no: "TEST-002",
-      main_app_desc: "Document management and testing framework",
-      is_active: true,
-    },
-    {
-      main_app_id: 3,
-      main_app_name: "CheckMate",
-      main_app_version: "3.0.1",
-      main_app_code: "CHKM",
-      main_app_model_no: "CHKM-003",
-      main_app_desc: "Quality assurance and validation system",
-      is_active: true,
-    },
-    {
-      main_app_id: 4,
-      main_app_name: "HRMS",
-      main_app_version: "4.2.0",
-      main_app_code: "HRMS",
-      main_app_model_no: "HRMS-004",
-      main_app_desc: "Human Resource Management System",
-      is_active: false,
-    },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -78,6 +36,27 @@ const Products = () => {
     main_app_desc: "",
     is_active: true,
   });
+
+  // Load products on component mount
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await productApi.getAll();
+      setProducts(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load products. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredProducts = products.filter(product =>
     product.main_app_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -96,18 +75,26 @@ const Products = () => {
     });
   };
 
-  const handleCreate = () => {
-    const newProduct: Product = {
-      main_app_id: Math.max(...products.map(p => p.main_app_id)) + 1,
-      ...formData,
-    };
-    setProducts([...products, newProduct]);
-    setIsCreateDialogOpen(false);
-    resetForm();
-    toast({
-      title: "Product Created",
-      description: "New product has been created successfully.",
-    });
+  const handleCreate = async () => {
+    try {
+      setCreating(true);
+      const newProduct = await productApi.create(formData);
+      setProducts([...products, newProduct]);
+      setIsCreateDialogOpen(false);
+      resetForm();
+      toast({
+        title: "Product Created",
+        description: "New product has been created successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleEdit = (product: Product) => {
@@ -123,22 +110,38 @@ const Products = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!selectedProduct) return;
     
-    const updatedProducts = products.map(product =>
-      product.main_app_id === selectedProduct.main_app_id
-        ? { ...product, ...formData }
-        : product
-    );
-    setProducts(updatedProducts);
-    setIsEditDialogOpen(false);
-    setSelectedProduct(null);
-    resetForm();
-    toast({
-      title: "Product Updated",
-      description: "Product has been updated successfully.",
-    });
+    try {
+      setUpdating(true);
+      await productApi.update({
+        main_app_id: selectedProduct.main_app_id,
+        ...formData,
+      });
+      
+      const updatedProducts = products.map(product =>
+        product.main_app_id === selectedProduct.main_app_id
+          ? { ...product, ...formData }
+          : product
+      );
+      setProducts(updatedProducts);
+      setIsEditDialogOpen(false);
+      setSelectedProduct(null);
+      resetForm();
+      toast({
+        title: "Product Updated",
+        description: "Product has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const handleDeleteClick = (product: Product) => {
@@ -146,18 +149,34 @@ const Products = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!productToDelete) return;
     
-    const updatedProducts = products.filter(product => product.main_app_id !== productToDelete.main_app_id);
-    setProducts(updatedProducts);
-    setIsDeleteDialogOpen(false);
-    setProductToDelete(null);
-    toast({
-      title: "Product Deleted",
-      description: "Product has been deleted successfully.",
-      variant: "destructive",
-    });
+    try {
+      setDeleting(true);
+      await productApi.delete({
+        main_app_id: productToDelete.main_app_id,
+        is_active: false,
+      });
+      
+      const updatedProducts = products.filter(product => product.main_app_id !== productToDelete.main_app_id);
+      setProducts(updatedProducts);
+      setIsDeleteDialogOpen(false);
+      setProductToDelete(null);
+      toast({
+        title: "Product Deleted",
+        description: "Product has been deleted successfully.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete product. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -188,51 +207,57 @@ const Products = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product Name</TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Version</TableHead>
-                <TableHead>Model No</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.main_app_id}>
-                  <TableCell className="font-medium">{product.main_app_name}</TableCell>
-                  <TableCell>{product.main_app_code}</TableCell>
-                  <TableCell>{product.main_app_version}</TableCell>
-                  <TableCell>{product.main_app_model_no}</TableCell>
-                  <TableCell>
-                    <Badge variant={product.is_active ? "default" : "secondary"}>
-                      {product.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(product)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteClick(product)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product Name</TableHead>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Version</TableHead>
+                  <TableHead>Model No</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product.main_app_id}>
+                    <TableCell className="font-medium">{product.main_app_name}</TableCell>
+                    <TableCell>{product.main_app_code}</TableCell>
+                    <TableCell>{product.main_app_version}</TableCell>
+                    <TableCell>{product.main_app_model_no}</TableCell>
+                    <TableCell>
+                      <Badge variant={product.is_active ? "default" : "secondary"}>
+                        {product.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteClick(product)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -322,7 +347,10 @@ const Products = () => {
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreate}>Create Product</Button>
+            <Button onClick={handleCreate} disabled={creating}>
+              {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Product
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -408,7 +436,10 @@ const Products = () => {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleUpdate}>Update Product</Button>
+            <Button onClick={handleUpdate} disabled={updating}>
+              {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Product
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -425,7 +456,8 @@ const Products = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

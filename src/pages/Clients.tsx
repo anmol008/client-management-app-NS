@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,42 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Client {
-  client_comp_id: number;
-  client_comp_code: string;
-  client_comp_name: string;
-  client_comp_short_name: string;
-  is_active: boolean;
-}
+import { clientApi, Client } from "@/services/api";
 
 const Clients = () => {
   const { toast } = useToast();
-  const [clients, setClients] = useState<Client[]>([
-    {
-      client_comp_id: 1,
-      client_comp_code: "CL001",
-      client_comp_name: "Tech Solutions Inc",
-      client_comp_short_name: "TechSol",
-      is_active: true,
-    },
-    {
-      client_comp_id: 2,
-      client_comp_code: "CL002",
-      client_comp_name: "Digital Innovations Ltd",
-      client_comp_short_name: "DigInno",
-      is_active: true,
-    },
-    {
-      client_comp_id: 3,
-      client_comp_code: "CL003",
-      client_comp_name: "Future Systems Corp",
-      client_comp_short_name: "FutureSys",
-      is_active: false,
-    },
-  ]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -53,11 +28,31 @@ const Clients = () => {
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
   const [formData, setFormData] = useState({
-    client_comp_code: "",
     client_comp_name: "",
     client_comp_short_name: "",
     is_active: true,
   });
+
+  // Load clients on component mount
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  const loadClients = async () => {
+    try {
+      setLoading(true);
+      const data = await clientApi.getAll();
+      setClients(data);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load clients. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredClients = clients.filter(client =>
     client.client_comp_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,31 +62,37 @@ const Clients = () => {
 
   const resetForm = () => {
     setFormData({
-      client_comp_code: "",
       client_comp_name: "",
       client_comp_short_name: "",
       is_active: true,
     });
   };
 
-  const handleCreate = () => {
-    const newClient: Client = {
-      client_comp_id: Math.max(...clients.map(c => c.client_comp_id)) + 1,
-      ...formData,
-    };
-    setClients([...clients, newClient]);
-    setIsCreateDialogOpen(false);
-    resetForm();
-    toast({
-      title: "Client Created",
-      description: "New client has been created successfully.",
-    });
+  const handleCreate = async () => {
+    try {
+      setCreating(true);
+      const newClient = await clientApi.create(formData);
+      setClients([...clients, newClient]);
+      setIsCreateDialogOpen(false);
+      resetForm();
+      toast({
+        title: "Client Created",
+        description: "New client has been created successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCreating(false);
+    }
   };
 
   const handleEdit = (client: Client) => {
     setSelectedClient(client);
     setFormData({
-      client_comp_code: client.client_comp_code,
       client_comp_name: client.client_comp_name,
       client_comp_short_name: client.client_comp_short_name,
       is_active: client.is_active,
@@ -99,22 +100,38 @@ const Clients = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!selectedClient) return;
     
-    const updatedClients = clients.map(client =>
-      client.client_comp_id === selectedClient.client_comp_id
-        ? { ...client, ...formData }
-        : client
-    );
-    setClients(updatedClients);
-    setIsEditDialogOpen(false);
-    setSelectedClient(null);
-    resetForm();
-    toast({
-      title: "Client Updated",
-      description: "Client has been updated successfully.",
-    });
+    try {
+      setUpdating(true);
+      await clientApi.update({
+        client_comp_id: selectedClient.client_comp_id,
+        ...formData,
+      });
+      
+      const updatedClients = clients.map(client =>
+        client.client_comp_id === selectedClient.client_comp_id
+          ? { ...client, ...formData }
+          : client
+      );
+      setClients(updatedClients);
+      setIsEditDialogOpen(false);
+      setSelectedClient(null);
+      resetForm();
+      toast({
+        title: "Client Updated",
+        description: "Client has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const handleDeleteClick = (client: Client) => {
@@ -122,18 +139,34 @@ const Clients = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!clientToDelete) return;
     
-    const updatedClients = clients.filter(client => client.client_comp_id !== clientToDelete.client_comp_id);
-    setClients(updatedClients);
-    setIsDeleteDialogOpen(false);
-    setClientToDelete(null);
-    toast({
-      title: "Client Deleted",
-      description: "Client has been deleted successfully.",
-      variant: "destructive",
-    });
+    try {
+      setDeleting(true);
+      await clientApi.delete({
+        client_comp_id: clientToDelete.client_comp_id,
+        is_active: false,
+      });
+      
+      const updatedClients = clients.filter(client => client.client_comp_id !== clientToDelete.client_comp_id);
+      setClients(updatedClients);
+      setIsDeleteDialogOpen(false);
+      setClientToDelete(null);
+      toast({
+        title: "Client Deleted",
+        description: "Client has been deleted successfully.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -164,49 +197,55 @@ const Clients = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Company Name</TableHead>
-                <TableHead>Short Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredClients.map((client) => (
-                <TableRow key={client.client_comp_id}>
-                  <TableCell className="font-medium">{client.client_comp_code}</TableCell>
-                  <TableCell>{client.client_comp_name}</TableCell>
-                  <TableCell>{client.client_comp_short_name}</TableCell>
-                  <TableCell>
-                    <Badge variant={client.is_active ? "default" : "secondary"}>
-                      {client.is_active ? "Active" : "Inactive"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(client)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteClick(client)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Company Name</TableHead>
+                  <TableHead>Short Name</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredClients.map((client) => (
+                  <TableRow key={client.client_comp_id}>
+                    <TableCell className="font-medium">{client.client_comp_code}</TableCell>
+                    <TableCell>{client.client_comp_name}</TableCell>
+                    <TableCell>{client.client_comp_short_name}</TableCell>
+                    <TableCell>
+                      <Badge variant={client.is_active ? "default" : "secondary"}>
+                        {client.is_active ? "Active" : "Inactive"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(client)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteClick(client)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -220,18 +259,6 @@ const Clients = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="code" className="text-right">
-                Code
-              </Label>
-              <Input
-                id="code"
-                value={formData.client_comp_code}
-                onChange={(e) => setFormData({ ...formData, client_comp_code: e.target.value })}
-                className="col-span-3"
-                placeholder="e.g., CL001"
-              />
-            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
                 Company Name
@@ -271,7 +298,10 @@ const Clients = () => {
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreate}>Create Client</Button>
+            <Button onClick={handleCreate} disabled={creating}>
+              {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Client
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -286,17 +316,6 @@ const Clients = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="editCode" className="text-right">
-                Code
-              </Label>
-              <Input
-                id="editCode"
-                value={formData.client_comp_code}
-                onChange={(e) => setFormData({ ...formData, client_comp_code: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="editName" className="text-right">
                 Company Name
@@ -334,7 +353,10 @@ const Clients = () => {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleUpdate}>Update Client</Button>
+            <Button onClick={handleUpdate} disabled={updating}>
+              {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Client
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -351,7 +373,8 @@ const Clients = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
