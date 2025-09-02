@@ -163,31 +163,45 @@ const Licenses = () => {
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="client_comp_code">Client Company Code</Label>
-                <Input
-                  id="client_comp_code"
+                <Label htmlFor="edit_client_comp_code">Client Company Name</Label>
+                <select
+                  id="edit_client_comp_code"
+                  className="w-full border rounded px-3 py-2"
                   value={formData.client_comp_code}
                   onChange={(e) => setFormData({ ...formData, client_comp_code: e.target.value })}
-                  placeholder="Enter client company code"
-                />
+                >
+                  <option value="CLI001">Company A</option>
+                  <option value="CLI002">Company B</option>
+                  <option value="CLI003">Company C</option>
+                </select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="subscription_id">Subscription ID</Label>
-                <Input
-                  id="subscription_id"
+                <Label htmlFor="edit_subscription_id">Subscription Name</Label>
+                <select
+                  id="edit_subscription_id"
+                  className="w-full border rounded px-3 py-2"
                   value={formData.subscription_id}
                   onChange={(e) => setFormData({ ...formData, subscription_id: e.target.value })}
-                  placeholder="Enter subscription ID"
-                />
+                >
+                  <option value="SUB001">Subscription Basic</option>
+                  <option value="SUB002">Subscription Pro</option>
+                  <option value="SUB003">Subscription Enterprise</option>
+                </select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="main_app_id">Main App ID</Label>
-                <Input
-                  id="main_app_id"
+                <Label htmlFor="edit_main_app_id">Main App Name</Label>
+                <select
+                  id="edit_main_app_id"
+                  className="w-full border rounded px-3 py-2"
                   value={formData.main_app_id}
                   onChange={(e) => setFormData({ ...formData, main_app_id: e.target.value })}
-                  placeholder="Enter main app ID"
-                />
+                >
+                  <option value="APP001">App One</option>
+                  <option value="APP002">App Two</option>
+                  <option value="APP003">App Three</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="max_allowed_users">Max Allowed Users</Label>
@@ -285,9 +299,9 @@ const Licenses = () => {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Client Code</TableHead>
-              <TableHead>Subscription ID</TableHead>
-              <TableHead>App ID</TableHead>
+              <TableHead>Client Name</TableHead>
+              <TableHead>Subscription Name</TableHead>
+              <TableHead>App Name</TableHead>
               <TableHead>Max Users</TableHead>
               <TableHead>Start Date</TableHead>
               <TableHead>End Date</TableHead>
@@ -342,30 +356,30 @@ const Licenses = () => {
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit_client_comp_code">Client Company Code</Label>
+              <Label htmlFor="edit_client_comp_code">Client Company Name</Label>
               <Input
                 id="edit_client_comp_code"
                 value={formData.client_comp_code}
                 onChange={(e) => setFormData({ ...formData, client_comp_code: e.target.value })}
-                placeholder="Enter client company code"
+                placeholder="Select Client Company Name"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit_subscription_id">Subscription ID</Label>
+              <Label htmlFor="edit_subscription_id">Subscription Name</Label>
               <Input
                 id="edit_subscription_id"
                 value={formData.subscription_id}
                 onChange={(e) => setFormData({ ...formData, subscription_id: e.target.value })}
-                placeholder="Enter subscription ID"
+                placeholder="Select Subscription Name"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit_main_app_id">Main App ID</Label>
+              <Label htmlFor="edit_main_app_id">Main App Name</Label>
               <Input
                 id="edit_main_app_id"
                 value={formData.main_app_id}
                 onChange={(e) => setFormData({ ...formData, main_app_id: e.target.value })}
-                placeholder="Enter main app ID"
+                placeholder="Select Main App Name"
               />
             </div>
             <div className="space-y-2">
