@@ -62,6 +62,37 @@ export interface DeleteProductRequest {
   is_active: false;
 }
 
+export interface Subscription {
+  subscription_id: number;
+  subscription_name: string;
+  subscription_price: number;
+  duration_days: number;
+  max_allowed_users: number;
+  is_active: boolean;
+}
+
+export interface CreateSubscriptionRequest {
+  subscription_name: string;
+  subscription_price: number;
+  duration_days: number;
+  max_allowed_users: number;
+  is_active: boolean;
+}
+
+export interface UpdateSubscriptionRequest {
+  subscription_id: number;
+  subscription_name: string;
+  subscription_price: number;
+  duration_days: number;
+  max_allowed_users: number;
+  is_active: boolean;
+}
+
+export interface DeleteSubscriptionRequest {
+  subscription_id: number;
+  is_active: false;
+}
+
 // Generic API response interface
 export interface ApiResponse<T> {
   success: boolean;
@@ -180,6 +211,63 @@ export const productApi = {
     });
     if (!response.ok) {
       throw new Error('Failed to delete product');
+    }
+  },
+};
+
+// Subscription API functions
+export const subscriptionApi = {
+  // Get all subscriptions
+  getAll: async (): Promise<Subscription[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/subscription?is_active=true`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch subscriptions");
+    }
+    const result: ApiResponse<Subscription> = await response.json();
+    return result.data;
+  },
+
+  // Create a new subscription
+  create: async (subscriptionData: CreateSubscriptionRequest): Promise<Subscription> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/subscription`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscriptionData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create subscription");
+    }
+    const result: ApiResponse<Subscription> = await response.json();
+    return result.data[0];
+  },
+
+  // Update a subscription
+  update: async (subscriptionData: UpdateSubscriptionRequest): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/subscription`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscriptionData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update subscription");
+    }
+  },
+
+  // Delete a subscription (soft delete by setting is_active to false)
+  delete: async (subscriptionData: DeleteSubscriptionRequest): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/subscription`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(subscriptionData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete subscription");
     }
   },
 };

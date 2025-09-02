@@ -192,6 +192,7 @@ const Licenses = () => {
               <div className="space-y-2">
                 <Label htmlFor="max_allowed_users">Max Allowed Users</Label>
                 <Input
+                  disabled
                   id="max_allowed_users"
                   type="number"
                   value={formData.max_allowed_users}
@@ -202,6 +203,7 @@ const Licenses = () => {
               <div className="space-y-2">
                 <Label htmlFor="start_date">Start Date</Label>
                 <Input
+                  disabled
                   id="start_date"
                   type="date"
                   value={formData.start_date}
@@ -211,6 +213,7 @@ const Licenses = () => {
               <div className="space-y-2">
                 <Label htmlFor="end_date">End Date</Label>
                 <Input
+                  disabled
                   id="end_date"
                   type="date"
                   value={formData.end_date}
@@ -220,6 +223,7 @@ const Licenses = () => {
               <div className="space-y-2">
                 <Label htmlFor="form_12a_no">Form 12A No</Label>
                 <Input
+                  disabled
                   id="form_12a_no"
                   value={formData.form_12a_no}
                   onChange={(e) => setFormData({ ...formData, form_12a_no: e.target.value })}
@@ -229,6 +233,7 @@ const Licenses = () => {
               <div className="space-y-2">
                 <Label htmlFor="form_80g_no">Form 80G No</Label>
                 <Input
+                  disabled
                   id="form_80g_no"
                   value={formData.form_80g_no}
                   onChange={(e) => setFormData({ ...formData, form_80g_no: e.target.value })}
@@ -366,6 +371,7 @@ const Licenses = () => {
             <div className="space-y-2">
               <Label htmlFor="edit_max_allowed_users">Max Allowed Users</Label>
               <Input
+                disabled
                 id="edit_max_allowed_users"
                 type="number"
                 value={formData.max_allowed_users}
@@ -376,6 +382,7 @@ const Licenses = () => {
             <div className="space-y-2">
               <Label htmlFor="edit_start_date">Start Date</Label>
               <Input
+                disabled
                 id="edit_start_date"
                 type="date"
                 value={formData.start_date}
@@ -385,6 +392,7 @@ const Licenses = () => {
             <div className="space-y-2">
               <Label htmlFor="edit_end_date">End Date</Label>
               <Input
+                disabled
                 id="edit_end_date"
                 type="date"
                 value={formData.end_date}
@@ -394,6 +402,7 @@ const Licenses = () => {
             <div className="space-y-2">
               <Label htmlFor="edit_form_12a_no">Form 12A No</Label>
               <Input
+                disabled
                 id="edit_form_12a_no"
                 value={formData.form_12a_no}
                 onChange={(e) => setFormData({ ...formData, form_12a_no: e.target.value })}
@@ -403,6 +412,7 @@ const Licenses = () => {
             <div className="space-y-2">
               <Label htmlFor="edit_form_80g_no">Form 80G No</Label>
               <Input
+                disabled
                 id="edit_form_80g_no"
                 value={formData.form_80g_no}
                 onChange={(e) => setFormData({ ...formData, form_80g_no: e.target.value })}
