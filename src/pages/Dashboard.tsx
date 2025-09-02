@@ -1,6 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Package, CreditCard, TrendingUp } from "lucide-react";
+import { useClients } from "@/context/ClientsContext";
+import { useSubscriptions } from "@/context/SubscriptionsContext";
+import { useProducts } from "@/context/ProductsContext";
 
 const stats = [
   {
@@ -51,6 +54,11 @@ const getStatusColor = (status: string) => {
 };
 
 export default function Dashboard() {
+
+  const { clients } = useClients();
+  const { products } = useProducts();
+  const { subscriptions } = useSubscriptions();
+
   return (
     <div className="space-y-6">
       <div>

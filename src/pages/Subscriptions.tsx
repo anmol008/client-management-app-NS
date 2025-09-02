@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,7 @@ const Subscriptions = () => {
     creating, 
     updating, 
     deleting, 
+    loadSubscriptions, 
     createSubscription, 
     updateSubscription, 
     deleteSubscription 
@@ -39,26 +40,10 @@ const Subscriptions = () => {
     is_active: true,
   });
 
-  // Load subscriptions
+  // Load subscriptions on mount
   useEffect(() => {
     loadSubscriptions();
   }, []);
-
-  const loadSubscriptions = async () => {
-    try {
-      setLoading(true);
-      const data = await subscriptionApi.getAll();
-      setSubscriptions(data);
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to load subscriptions. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredSubscriptions = subscriptions.filter((sub) =>
     sub.subscription_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -75,29 +60,17 @@ const Subscriptions = () => {
   };
 
   const handleCreate = async () => {
-    try {
-      setCreating(true);
-      const newSub = await subscriptionApi.create({
-        ...formData,
-        subscription_price: Number(formData.subscription_price),
-        duration_days: Number(formData.duration_days),
-        max_allowed_users: Number(formData.max_allowed_users),
-      });
-      setSubscriptions([...subscriptions, newSub]);
+    const success = await createSubscription({
+      subscription_name: formData.subscription_name,
+      subscription_price: Number(formData.subscription_price),
+      duration_days: Number(formData.duration_days),
+      max_allowed_users: Number(formData.max_allowed_users),
+      is_active: formData.is_active,
+    });
+
+    if (success) {
       setIsCreateDialogOpen(false);
       resetForm();
-      toast({
-        title: "Subscription Created",
-        description: "New subscription has been created successfully.",
-      });
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to create subscription. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -116,41 +89,19 @@ const Subscriptions = () => {
   const handleUpdate = async () => {
     if (!selectedSubscription) return;
 
-    try {
-      setUpdating(true);
-      await subscriptionApi.update({
-        subscription_id: selectedSubscription.subscription_id,
-        ...formData,
-        subscription_price: Number(formData.subscription_price),
-        duration_days: Number(formData.duration_days),
-        max_allowed_users: Number(formData.max_allowed_users),
-      });
+    const success = await updateSubscription({
+      subscription_id: selectedSubscription.subscription_id,
+      subscription_name: formData.subscription_name,
+      subscription_price: Number(formData.subscription_price),
+      duration_days: Number(formData.duration_days),
+      max_allowed_users: Number(formData.max_allowed_users),
+      is_active: formData.is_active,
+    });
 
-      const updatedSubs = subscriptions.map((sub) =>
-        sub.subscription_id === selectedSubscription.subscription_id
-          ? {
-              ...sub,
-              ...formData,
-              subscription_price: Number(formData.subscription_price),
-            }
-          : sub
-      );
-      setSubscriptions(updatedSubs);
+    if (success) {
       setIsEditDialogOpen(false);
       setSelectedSubscription(null);
       resetForm();
-      toast({
-        title: "Subscription Updated",
-        description: "Subscription has been updated successfully.",
-      });
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to update subscription. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -161,32 +112,11 @@ const Subscriptions = () => {
 
   const handleDelete = async () => {
     if (!subscriptionToDelete) return;
+    const success = await deleteSubscription(subscriptionToDelete.subscription_id);
 
-    try {
-      setDeleting(true);
-      await subscriptionApi.delete({
-        subscription_id: subscriptionToDelete.subscription_id,
-        is_active: false,
-      });
-
-      setSubscriptions(
-        subscriptions.filter((sub) => sub.subscription_id !== subscriptionToDelete.subscription_id)
-      );
+    if (success) {
       setIsDeleteDialogOpen(false);
       setSubscriptionToDelete(null);
-      toast({
-        title: "Subscription Deleted",
-        description: "Subscription has been deleted successfully.",
-        variant: "destructive",
-      });
-    } catch {
-      toast({
-        title: "Error",
-        description: "Failed to delete subscription. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting(false);
     }
   };
 

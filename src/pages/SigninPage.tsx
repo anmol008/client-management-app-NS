@@ -112,7 +112,7 @@ const SigninPage = () => {
             </form>
           </Form>
 
-          <div className="mt-6 text-center text-sm">
+          {/* <div className="mt-6 text-center text-sm">
             <span className="text-gray-600">Don't have an account?</span>{" "}
             <Link
               to="/signup"
@@ -120,7 +120,7 @@ const SigninPage = () => {
             >
               Create an account
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
