@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,16 +10,20 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { productApi, Product } from "@/services/api";
+import { useProducts } from "@/context/ProductsContext";
+import { Product } from "@/services/api";
 
 const Products = () => {
-  const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { 
+    products, 
+    loading, 
+    creating, 
+    updating, 
+    deleting, 
+    createProduct, 
+    updateProduct, 
+    deleteProduct 
+  } = useProducts();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -37,31 +41,10 @@ const Products = () => {
     is_active: true,
   });
 
-  // Load products on component mount
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await productApi.getAll();
-      setProducts(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load products. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const filteredProducts = products.filter(product =>
     product.main_app_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.main_app_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.main_app_model_no.toLowerCase().includes(searchTerm.toLowerCase())
+    product.main_app_version.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const resetForm = () => {
@@ -76,24 +59,10 @@ const Products = () => {
   };
 
   const handleCreate = async () => {
-    try {
-      setCreating(true);
-      const newProduct = await productApi.create(formData);
-      setProducts([...products, newProduct]);
+    const success = await createProduct(formData);
+    if (success) {
       setIsCreateDialogOpen(false);
       resetForm();
-      toast({
-        title: "Product Created",
-        description: "New product has been created successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create product. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -113,34 +82,15 @@ const Products = () => {
   const handleUpdate = async () => {
     if (!selectedProduct) return;
     
-    try {
-      setUpdating(true);
-      await productApi.update({
-        main_app_id: selectedProduct.main_app_id,
-        ...formData,
-      });
-      
-      const updatedProducts = products.map(product =>
-        product.main_app_id === selectedProduct.main_app_id
-          ? { ...product, ...formData }
-          : product
-      );
-      setProducts(updatedProducts);
+    const success = await updateProduct({
+      main_app_id: selectedProduct.main_app_id,
+      ...formData,
+    });
+    
+    if (success) {
       setIsEditDialogOpen(false);
       setSelectedProduct(null);
       resetForm();
-      toast({
-        title: "Product Updated",
-        description: "Product has been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update product. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -152,30 +102,10 @@ const Products = () => {
   const handleDelete = async () => {
     if (!productToDelete) return;
     
-    try {
-      setDeleting(true);
-      await productApi.delete({
-        main_app_id: productToDelete.main_app_id,
-        is_active: false,
-      });
-      
-      const updatedProducts = products.filter(product => product.main_app_id !== productToDelete.main_app_id);
-      setProducts(updatedProducts);
+    const success = await deleteProduct(productToDelete.main_app_id);
+    if (success) {
       setIsDeleteDialogOpen(false);
       setProductToDelete(null);
-      toast({
-        title: "Product Deleted",
-        description: "Product has been deleted successfully.",
-        variant: "destructive",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete product. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting(false);
     }
   };
 

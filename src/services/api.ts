@@ -215,6 +215,46 @@ export const productApi = {
   },
 };
 
+// License API interfaces
+export interface License {
+  client_subscription_id: number;
+  client_comp_code: string;
+  subscription_id: number;
+  main_app_id: number;
+  max_allowed_users: number;
+  start_date: string;
+  end_date: string;
+  form_12a_no: string;
+  form_80g_no: string;
+  form_end_point: string;
+  is_active: boolean;
+}
+
+export interface CreateLicenseRequest {
+  client_comp_code: string;
+  subscription_id: number;
+  main_app_id: number;
+  form_end_point: string;
+  is_active: boolean;
+}
+
+export interface UpdateLicenseRequest {
+  client_subscription_id: number;
+  client_comp_code: string;
+  subscription_id: number;
+  max_allowed_users: number;
+  start_date: string;
+  end_date: string;
+  main_app_id: number;
+  form_end_point: string;
+  is_active: boolean;
+}
+
+export interface DeleteLicenseRequest {
+  client_subscription_id: number;
+  is_active: false;
+}
+
 // Subscription API functions
 export const subscriptionApi = {
   // Get all subscriptions
@@ -268,6 +308,63 @@ export const subscriptionApi = {
     });
     if (!response.ok) {
       throw new Error("Failed to delete subscription");
+    }
+  },
+};
+
+// License API functions
+export const licenseApi = {
+  // Get all licenses
+  getAll: async (): Promise<License[]> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-subscription?is_active=true`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch licenses");
+    }
+    const result: ApiResponse<License> = await response.json();
+    return result.data;
+  },
+
+  // Create a new license
+  create: async (licenseData: CreateLicenseRequest): Promise<License> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-subscription`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(licenseData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create license");
+    }
+    const result: ApiResponse<License> = await response.json();
+    return result.data[0];
+  },
+
+  // Update a license
+  update: async (licenseData: UpdateLicenseRequest): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-subscription`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(licenseData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update license");
+    }
+  },
+
+  // Delete a license (soft delete by setting is_active to false)
+  delete: async (licenseData: DeleteLicenseRequest): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-subscription`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(licenseData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to delete license");
     }
   },
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,16 +9,20 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { clientApi, Client } from "@/services/api";
+import { useClients } from "@/context/ClientsContext";
+import { Client } from "@/services/api";
 
 const Clients = () => {
-  const { toast } = useToast();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { 
+    clients, 
+    loading, 
+    creating, 
+    updating, 
+    deleting, 
+    createClient, 
+    updateClient, 
+    deleteClient 
+  } = useClients();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -32,27 +36,6 @@ const Clients = () => {
     client_comp_short_name: "",
     is_active: true,
   });
-
-  // Load clients on component mount
-  useEffect(() => {
-    loadClients();
-  }, []);
-
-  const loadClients = async () => {
-    try {
-      setLoading(true);
-      const data = await clientApi.getAll();
-      setClients(data);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load clients. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const filteredClients = clients.filter(client =>
     client.client_comp_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -69,24 +52,10 @@ const Clients = () => {
   };
 
   const handleCreate = async () => {
-    try {
-      setCreating(true);
-      const newClient = await clientApi.create(formData);
-      setClients([...clients, newClient]);
+    const success = await createClient(formData);
+    if (success) {
       setIsCreateDialogOpen(false);
       resetForm();
-      toast({
-        title: "Client Created",
-        description: "New client has been created successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create client. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setCreating(false);
     }
   };
 
@@ -103,34 +72,15 @@ const Clients = () => {
   const handleUpdate = async () => {
     if (!selectedClient) return;
     
-    try {
-      setUpdating(true);
-      await clientApi.update({
-        client_comp_id: selectedClient.client_comp_id,
-        ...formData,
-      });
-      
-      const updatedClients = clients.map(client =>
-        client.client_comp_id === selectedClient.client_comp_id
-          ? { ...client, ...formData }
-          : client
-      );
-      setClients(updatedClients);
+    const success = await updateClient({
+      client_comp_id: selectedClient.client_comp_id,
+      ...formData,
+    });
+    
+    if (success) {
       setIsEditDialogOpen(false);
       setSelectedClient(null);
       resetForm();
-      toast({
-        title: "Client Updated",
-        description: "Client has been updated successfully.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update client. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdating(false);
     }
   };
 
@@ -142,30 +92,10 @@ const Clients = () => {
   const handleDelete = async () => {
     if (!clientToDelete) return;
     
-    try {
-      setDeleting(true);
-      await clientApi.delete({
-        client_comp_id: clientToDelete.client_comp_id,
-        is_active: false,
-      });
-      
-      const updatedClients = clients.filter(client => client.client_comp_id !== clientToDelete.client_comp_id);
-      setClients(updatedClients);
+    const success = await deleteClient(clientToDelete.client_comp_id);
+    if (success) {
       setIsDeleteDialogOpen(false);
       setClientToDelete(null);
-      toast({
-        title: "Client Deleted",
-        description: "Client has been deleted successfully.",
-        variant: "destructive",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete client. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting(false);
     }
   };
 

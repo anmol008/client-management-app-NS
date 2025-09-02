@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,16 +9,20 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { subscriptionApi, Subscription } from "@/services/api";
+import { useSubscriptions } from "@/context/SubscriptionsContext";
+import { Subscription } from "@/services/api";
 
 const Subscriptions = () => {
-  const { toast } = useToast();
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
-  const [updating, setUpdating] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const { 
+    subscriptions, 
+    loading, 
+    creating, 
+    updating, 
+    deleting, 
+    createSubscription, 
+    updateSubscription, 
+    deleteSubscription 
+  } = useSubscriptions();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
