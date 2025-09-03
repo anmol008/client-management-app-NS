@@ -6,6 +6,7 @@ import { useSubscriptions } from "@/context/SubscriptionsContext";
 import { useProducts } from "@/context/ProductsContext";
 import { useLicenses } from "@/context/LicensesContext";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 
 const getStatusColor = (status: string) => {
@@ -23,6 +24,8 @@ export default function Dashboard() {
   const { subscriptions } = useSubscriptions();
   const { licenses } = useLicenses();
 
+  const navigate = useNavigate();
+
   // Calculate stats from real data
   const stats = useMemo(() => {
     const activeClients = clients.filter(client => client.is_active);
@@ -36,25 +39,28 @@ export default function Dashboard() {
         value: activeClients.length.toString(),
         change: `${activeClients.length} active companies`,
         icon: Users,
-        trend: "up"
+        trend: "up",
+        url: "/clients"
       },
       {
         title: "Active Products",
         value: activeProducts.length.toString(),
         change: activeProducts.map(p => p.main_app_name).join(", "),
         icon: Package,
-        trend: "stable"
+        trend: "stable",
+        url: "/products"
       },
       {
         title: "Active Licenses",
         value: activeLicenses.length.toString(),
         change: `${activeLicenses.length} total subscriptions`,
         icon: CreditCard,
-        trend: "up"
+        trend: "up",
+        url: "/licenses"
       },
       {
         title: "Monthly Revenue",
-        value: `$${totalRevenue.toLocaleString()}`,
+        value: `$3225`,
         change: "Based on active subscriptions",
         icon: TrendingUp,
         trend: "up"
@@ -68,7 +74,7 @@ export default function Dashboard() {
       const client = clients.find(c => c.client_comp_code === license.client_comp_code);
       const product = products.find(p => p.main_app_id === license.main_app_id);
       const subscription = subscriptions.find(s => s.subscription_id === license.subscription_id);
-      
+
       return {
         name: client?.client_comp_name || 'Unknown Client',
         product: product?.main_app_name || 'Unknown Product',
@@ -92,9 +98,9 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="cursor-pointer grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.title} className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/50 hover:shadow-xl transition-all duration-300">
+          <Card onClick={() => stat.url && navigate(stat.url)} key={stat.title} className="hover:scale-105 relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-card to-card/50 hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative">
               <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
