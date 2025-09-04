@@ -175,22 +175,14 @@ const Licenses = () => {
     });
   };
 
-  // Add this function inside your Licenses component
-  const handleUpdatePlan = async () => {
-    console.log('first')
-    if (!selectedLicense || !formData.client_comp_code || formData.subscription_id === 0 || formData.main_app_id === 0) {
-      return;
-    }
+  const handleUpdatePlan = async (license: License) => {
     const licenseData: UpdatePlan = {
-      client_comp_code: formData.client_comp_code,
-      subscription_id: formData.subscription_id,
-      main_app_id: formData.main_app_id,
-      is_active: formData.is_active,
+      client_comp_code: license.client_comp_code,
+      subscription_id: license.subscription_id,
+      main_app_id: license.main_app_id,
+      is_active: license.is_active,
     };
-    const success = await updatePlan(licenseData);
-    if (success) {
-      window.open('Hello its done')
-    }
+    await updatePlan(licenseData);
   };
 
   return (
@@ -274,7 +266,7 @@ const Licenses = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={handleUpdatePlan}
+                          onClick={() => handleUpdatePlan(license)}
                           disabled={updating}
                         >
                           Update Plan
