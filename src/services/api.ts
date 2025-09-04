@@ -250,6 +250,12 @@ export interface UpdateLicenseRequest {
   is_active: boolean;
 }
 
+export interface UpdatePlan {
+  client_comp_code: string;
+  subscription_id: number;
+  main_app_id: number;
+  is_active: boolean;
+}
 export interface DeleteLicenseRequest {
   client_subscription_id: number;
   is_active: false;
@@ -365,6 +371,19 @@ export const licenseApi = {
     });
     if (!response.ok) {
       throw new Error("Failed to delete license");
+    }
+  },
+
+  updatePlan: async (licenseData: UpdatePlan): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/api/v1/client-subscription-form`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(licenseData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to update license");
     }
   },
 };

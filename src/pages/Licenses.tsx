@@ -14,18 +14,19 @@ import { useLicenses } from "@/context/LicensesContext";
 import { useClients } from "@/context/ClientsContext";
 import { useProducts } from "@/context/ProductsContext";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
-import { License, CreateLicenseRequest, UpdateLicenseRequest } from "@/services/api";
+import { License, CreateLicenseRequest, UpdateLicenseRequest, UpdatePlan } from "@/services/api";
 
 const Licenses = () => {
-  const { 
-    licenses, 
-    loading: licensesLoading, 
-    creating, 
-    updating, 
-    deleting, 
-    createLicense, 
-    updateLicense, 
-    deleteLicense 
+  const {
+    licenses,
+    loading: licensesLoading,
+    creating,
+    updating,
+    deleting,
+    createLicense,
+    updateLicense,
+    deleteLicense,
+    updatePlan
   } = useLicenses();
 
   const { clients } = useClients();
@@ -37,8 +38,8 @@ const Licenses = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState<License | null>(null);
-  
-  const [formData, setFormData] = useState<Omit<CreateLicenseRequest, 'client_comp_code'> & { 
+
+  const [formData, setFormData] = useState<Omit<CreateLicenseRequest, 'client_comp_code'> & {
     client_comp_id?: number;
     client_comp_code: string;
     max_allowed_users: number;
@@ -154,7 +155,7 @@ const Licenses = () => {
 
   const handleDelete = async () => {
     if (!selectedLicense) return;
-    
+
     const success = await deleteLicense(selectedLicense.client_subscription_id);
     if (success) {
       setIsDeleteDialogOpen(false);
@@ -172,6 +173,24 @@ const Licenses = () => {
       form_end_point: "",
       is_active: true,
     });
+  };
+
+  // Add this function inside your Licenses component
+  const handleUpdatePlan = async () => {
+    console.log('first')
+    if (!selectedLicense || !formData.client_comp_code || formData.subscription_id === 0 || formData.main_app_id === 0) {
+      return;
+    }
+    const licenseData: UpdatePlan = {
+      client_comp_code: formData.client_comp_code,
+      subscription_id: formData.subscription_id,
+      main_app_id: formData.main_app_id,
+      is_active: formData.is_active,
+    };
+    const success = await updatePlan(licenseData);
+    if (success) {
+      window.open('Hello its done')
+    }
   };
 
   return (
@@ -211,10 +230,10 @@ const Licenses = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Client Name</TableHead>
+                  <TableHead>Client</TableHead>
                   <TableHead>Subscription</TableHead>
                   <TableHead>App Name</TableHead>
-                  <TableHead>Max Users</TableHead>
+                  <TableHead>Users</TableHead>
                   <TableHead>Start Date</TableHead>
                   <TableHead>End Date</TableHead>
                   <TableHead>Status</TableHead>
@@ -252,6 +271,14 @@ const Licenses = () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleUpdatePlan}
+                          disabled={updating}
+                        >
+                          Update Plan
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -277,10 +304,10 @@ const Licenses = () => {
                   const clientId = parseInt(value);
                   const client = clients.find(c => c.client_comp_id === clientId);
                   if (client) {
-                    setFormData({ 
-                      ...formData, 
+                    setFormData({
+                      ...formData,
                       client_comp_id: clientId,
-                      client_comp_code: client.client_comp_code 
+                      client_comp_code: client.client_comp_code
                     });
                   }
                 }}
@@ -357,14 +384,14 @@ const Licenses = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-2 col-span-2">
+            {/* <div className="flex items-center space-x-2 col-span-2">
               <Switch
                 id="is_active"
                 checked={formData.is_active}
                 onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
               />
               <Label htmlFor="is_active">Active</Label>
-            </div>
+            </div> */}
           </div>
           <div className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -393,10 +420,10 @@ const Licenses = () => {
                   const clientId = parseInt(value);
                   const client = clients.find(c => c.client_comp_id === clientId);
                   if (client) {
-                    setFormData({ 
-                      ...formData, 
+                    setFormData({
+                      ...formData,
                       client_comp_id: clientId,
-                      client_comp_code: client.client_comp_code 
+                      client_comp_code: client.client_comp_code
                     });
                   }
                 }}
@@ -473,14 +500,14 @@ const Licenses = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-2 col-span-2">
+            {/* <div className="flex items-center space-x-2 col-span-2">
               <Switch
                 id="edit_is_active"
                 checked={formData.is_active}
                 onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
               />
               <Label htmlFor="edit_is_active">Active</Label>
-            </div>
+            </div> */}
           </div>
           <div className="flex justify-end space-x-2 mt-4">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>

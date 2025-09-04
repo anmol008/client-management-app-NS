@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { licenseApi, License, CreateLicenseRequest, UpdateLicenseRequest } from "@/services/api";
+import { licenseApi, License, CreateLicenseRequest, UpdateLicenseRequest, UpdatePlan } from "@/services/api";
 import { toast } from "sonner";
 
 interface LicensesContextType {
@@ -12,6 +12,7 @@ interface LicensesContextType {
   createLicense: (licenseData: CreateLicenseRequest) => Promise<boolean>;
   updateLicense: (licenseData: UpdateLicenseRequest) => Promise<boolean>;
   deleteLicense: (licenseId: number) => Promise<boolean>;
+  updatePlan: (licenseData: UpdatePlan) => Promise<boolean>;
 }
 
 const LicensesContext = createContext<LicensesContextType | undefined>(undefined);
@@ -90,6 +91,20 @@ export function LicensesProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updatePlan = async (licenseData: UpdatePlan): Promise<boolean> => {
+    try {
+      setUpdating(true);
+      await licenseApi.updatePlan(licenseData);
+      toast.success("License updated successfully");
+      return true;
+    } catch (error) {
+      toast.error("Failed to update license. Please try again.");
+      return false;
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <LicensesContext.Provider
       value={{
@@ -102,6 +117,7 @@ export function LicensesProvider({ children }: { children: ReactNode }) {
         createLicense,
         updateLicense,
         deleteLicense,
+        updatePlan
       }}
     >
       {children}
