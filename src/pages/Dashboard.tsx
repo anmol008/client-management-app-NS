@@ -93,7 +93,7 @@ export default function Dashboard() {
           Dashboard
         </h1>
         <p className="text-lg text-muted-foreground">
-          Welcome to CPS Client Management System
+          Welcome to NuSummit's Client Management Portal
         </p>
       </div>
 

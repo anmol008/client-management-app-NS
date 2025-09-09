@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  cms-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cms-ui:latest
+    container_name: cms-ui
+    ports:
+      - "2026:2026"
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  backend:
+    image: cms-ui:latest
+    container_name: cms-ui
+    ports:
+      - "2026:2026"
+    restart: unless-stopped

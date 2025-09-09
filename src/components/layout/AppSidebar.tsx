@@ -1,8 +1,8 @@
-import { 
-  LayoutDashboard, 
-  Users, 
-  Package, 
-  CreditCard, 
+import {
+  LayoutDashboard,
+  Users,
+  Package,
+  CreditCard,
   Calendar,
   Settings,
   LogOut
@@ -34,20 +34,19 @@ const menuItems = [
 export function AppSidebar() {
   return (
     <Sidebar className="border-r border-border">
-      <SidebarHeader className="p-6 border-b border-border">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">
-              <img src='pi_logo.png' alt='CPS'></img>
-            </span>
-          </div>
-          <div>
-            <h2 className="font-semibold text-foreground">CPS Manager</h2>
-            <p className="text-xs text-muted-foreground">Client Portal System</p>
-          </div>
+      <SidebarHeader className="border-b border-border">
+        <div className="flex flex-col items-start">
+          <img
+            className="w-[160px] h-auto object-contain"
+            src="Nusummit.png"
+            alt="cms"
+          />
+          <p className="text-sm text-muted-foreground ml-2.5">
+            Client Management Portal
+          </p>
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Main Navigation</SidebarGroupLabel>
@@ -56,13 +55,12 @@ export function AppSidebar() {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
+                    <NavLink
+                      to={item.url}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                          isActive 
-                            ? "bg-primary text-primary-foreground" 
-                            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
                         }`
                       }
                     >

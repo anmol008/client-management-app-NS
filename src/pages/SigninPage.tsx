@@ -2,7 +2,7 @@ import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -41,7 +41,6 @@ const SigninPage = () => {
       };
 
       const success = await signin(signinRequest);
-      console.log(success)
       if (success) {
         navigate("/dashboard");
       }
@@ -52,32 +51,36 @@ const SigninPage = () => {
 
   return (
     <div className="font-poppins min-h-screen flex items-center justify-center bg-gray-50 p-6 sm:p-10">
-      <div className="w-full max-w-xl space-y-8">
-        {/* <div className="text-center">
-          <img src={logo} alt="logo" className="mx-auto w-80 h-auto" />
-        </div> */}
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <div className="text-center mb-4">
-            <h1 className="text-2xl font-semibold text-gray-700">
+      <div className="w-full max-w-md">
+        <div className="bg-white p-8 rounded-xl shadow-md space-y-6">
+          {/* Logo + Title */}
+          <div className="text-center space-y-2">
+            <img
+              className="mx-auto w-[140px] h-auto object-contain"
+              src="Nusummit.png"
+              alt="Client Management System"
+            />
+            <h2 className="text-lg font-semibold text-gray-700">
+              Client Management Portal
+            </h2>
+            <p className="text-sm text-gray-500">
               Sign in to continue
-            </h1>
-            <p className="text-gray-600 mt-2 text-sm">
-              Please enter your email and password
             </p>
           </div>
+
+          {/* Signin Form */}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 control={form.control}
                 name="user_email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-500">Email</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="email@example.com"
                         type="email"
-                        className="border bg-white text-black border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                         {...field}
                       />
                     </FormControl>
@@ -91,11 +94,13 @@ const SigninPage = () => {
                 name="user_pwd"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-500">Password</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input
-                        className="border bg-white text-black border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        type="password" placeholder="******" {...field} />
+                        placeholder="******"
+                        type="password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -111,16 +116,6 @@ const SigninPage = () => {
               </Button>
             </form>
           </Form>
-
-          {/* <div className="mt-6 text-center text-sm">
-            <span className="text-gray-600">Don't have an account?</span>{" "}
-            <Link
-              to="/signup"
-              className="text-primary font-semibold hover:underline"
-            >
-              Create an account
-            </Link>
-          </div> */}
         </div>
       </div>
     </div>

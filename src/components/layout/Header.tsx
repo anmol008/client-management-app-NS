@@ -16,17 +16,18 @@ interface HeaderProps {
 }
 
 export function Header({ onLogout }: HeaderProps) {
+  const userData = localStorage.getItem("user");
+  const user = userData ? JSON.parse(userData) : null;
+
   return (
     <header className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         <SidebarTrigger />
       </div>
-      
       <div className="flex items-center gap-4">
         <Button variant="outline" size="icon">
           <Bell className="h-4 w-4" />
         </Button>
-        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="relative h-8 w-8 rounded-full">
@@ -39,9 +40,11 @@ export function Header({ onLogout }: HeaderProps) {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Admin User</p>
+                <p className="text-sm font-medium leading-none">
+                  {user.user_name}
+                </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  admin@cps.com
+                  {user.user_email}
                 </p>
               </div>
             </DropdownMenuLabel>
