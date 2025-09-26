@@ -8,7 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Loader2, CheckCircle, RefreshCw, XCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useLicenses } from "@/context/LicensesContext";
 import { useClients } from "@/context/ClientsContext";
@@ -52,6 +52,12 @@ const Licenses = () => {
     form_end_point: "",
     is_active: true,
   });
+
+  const [isRenewing, setIsRenewing] = useState(false);
+
+  const toggleRenew = () => {
+    setIsRenewing((prev) => !prev);
+  };
 
   const filteredLicenses = licenses.filter(license =>
     license.client_comp_code.toLowerCase().includes(searchTerm.toLowerCase())
@@ -200,8 +206,6 @@ const Licenses = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>License List</CardTitle>
-          <CardDescription>View and manage all client licenses</CardDescription>
           <div className="relative max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -366,6 +370,28 @@ const Licenses = () => {
               />
             </div>
 
+            {/* Start Date */}
+            <div className="space-y-2">
+              <Label htmlFor="edit_start_date">Start Date</Label>
+              <Input
+                id="edit_start_date"
+                type="date"
+                value={selectedLicense?.start_date || ""}
+                disabled
+              />
+            </div>
+
+            {/* End Date */}
+            <div className="space-y-2">
+              <Label htmlFor="edit_end_date">End Date</Label>
+              <Input
+                id="edit_end_date"
+                type="date"
+                value={selectedLicense?.end_date || ""}
+                disabled
+              />
+            </div>
+
             <div className="space-y-2 col-span-2">
               <Label htmlFor="form_end_point">Form End Point</Label>
               <Input
@@ -492,6 +518,28 @@ const Licenses = () => {
               />
             </div>
 
+            {/* Start Date */}
+            <div className="space-y-2">
+              <Label htmlFor="edit_start_date">Start Date</Label>
+              <Input
+                id="edit_start_date"
+                type="date"
+                value={selectedLicense?.start_date || ""}
+                disabled
+              />
+            </div>
+
+            {/* End Date */}
+            <div className="space-y-2">
+              <Label htmlFor="edit_end_date">End Date</Label>
+              <Input
+                id="edit_end_date"
+                type="date"
+                value={selectedLicense?.end_date || ""}
+                disabled
+              />
+            </div>
+
             {/* <div className="flex items-center space-x-2 col-span-2">
               <Switch
                 id="edit_is_active"
@@ -501,15 +549,44 @@ const Licenses = () => {
               <Label htmlFor="edit_is_active">Active</Label>
             </div> */}
           </div>
-          <div className="flex justify-end space-x-2 mt-4">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancel
+          <div className="flex justify-between items-center mt-4">
+            {/* Renew button on the left */}
+            <Button
+              onClick={toggleRenew}
+              variant="ghost"
+              className={`flex items-center space-x-2 rounded-full px-4 py-2 ${isRenewing
+                  ? "bg-orange-600 text-white hover:bg-orange-700"
+                  : "bg-orange-500 text-white hover:bg-orange-600"
+                }`}
+            >
+              {isRenewing ? (
+                <>
+                  <XCircle className="h-5 w-5" />
+                  <span>Cancel</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-5 w-5" />
+                  <span>Renew</span>
+                </>
+              )}
             </Button>
-            <Button onClick={handleUpdate} disabled={updating}>
-              {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Update License
-            </Button>
+
+            {/* Cancel and Update buttons on the right */}
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleUpdate} disabled={updating}>
+                {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Update License
+              </Button>
+            </div>
           </div>
+
         </DialogContent>
       </Dialog>
 
