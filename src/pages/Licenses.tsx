@@ -15,6 +15,7 @@ import { useClients } from "@/context/ClientsContext";
 import { useProducts } from "@/context/ProductsContext";
 import { useSubscriptions } from "@/context/SubscriptionsContext";
 import { License, CreateLicenseRequest, UpdateLicenseRequest, UpdatePlan } from "@/services/api";
+import { format } from "date-fns";
 
 const Licenses = () => {
   const {
@@ -290,8 +291,12 @@ const Licenses = () => {
                     <TableCell>{getSubscriptionNameById(license.subscription_id)}</TableCell>
                     <TableCell>{getProductNameById(license.main_app_id)}</TableCell>
                     <TableCell>{license.max_allowed_users}</TableCell>
-                    <TableCell>{license.start_date}</TableCell>
-                    <TableCell>{license.end_date}</TableCell>
+                    <TableCell>
+                      {license.start_date ? format(new Date(license.start_date), "dd-MM-yyyy") : ""}
+                    </TableCell>
+                    <TableCell>
+                      {license.end_date ? format(new Date(license.end_date), "dd-MM-yyyy") : ""}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={license.is_active ? "default" : "secondary"}>
                         {license.is_active ? "Active" : "Inactive"}
@@ -601,8 +606,8 @@ const Licenses = () => {
               onClick={toggleRenew}
               variant="ghost"
               className={`flex items-center space-x-2 rounded-full px-4 py-2 ${isRenewing
-                  ? "bg-orange-600 text-white hover:bg-orange-700"
-                  : "bg-orange-500 text-white hover:bg-orange-600"
+                ? "bg-orange-600 text-white hover:bg-orange-700"
+                : "bg-orange-500 text-white hover:bg-orange-600"
                 }`}
             >
               {isRenewing ? (
