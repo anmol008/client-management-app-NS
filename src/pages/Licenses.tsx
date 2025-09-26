@@ -43,6 +43,8 @@ const Licenses = () => {
     client_comp_id?: number;
     client_comp_code: string;
     max_allowed_users: number;
+    start_date: string;
+    end_date: string;
   }>({
     client_comp_code: "",
     client_comp_id: undefined,
@@ -51,12 +53,33 @@ const Licenses = () => {
     max_allowed_users: 0,
     form_end_point: "",
     is_active: true,
+    start_date: "",
+    end_date: "",
   });
 
   const [isRenewing, setIsRenewing] = useState(false);
 
   const toggleRenew = () => {
-    setIsRenewing((prev) => !prev);
+    setIsRenewing((prev) => {
+      const newRenewing = !prev;
+      if (newRenewing && selectedLicense && formData.subscription_id > 0) {
+        // When renewing, calculate dates from today
+        const { start_date, end_date } = calculateDates(formData.subscription_id, true);
+        setFormData(prev => ({
+          ...prev,
+          start_date,
+          end_date
+        }));
+      } else if (!newRenewing && selectedLicense) {
+        // When cancelling renew, restore original dates
+        setFormData(prev => ({
+          ...prev,
+          start_date: selectedLicense.start_date,
+          end_date: selectedLicense.end_date
+        }));
+      }
+      return newRenewing;
+    });
   };
 
   const filteredLicenses = licenses.filter(license =>
@@ -81,18 +104,36 @@ const Licenses = () => {
     return subscription ? subscription.subscription_name : `Subscription ${id}`;
   };
 
-  // Update max allowed users when subscription changes
+  // Calculate dates based on subscription
+  const calculateDates = (subscriptionId: number, fromToday: boolean = false) => {
+    const subscription = subscriptions.find(s => s.subscription_id === subscriptionId);
+    if (!subscription) return { start_date: "", end_date: "" };
+
+    const startDate = fromToday ? new Date() : (selectedLicense ? new Date(selectedLicense.start_date) : new Date());
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + subscription.duration_days);
+
+    return {
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0]
+    };
+  };
+
+  // Update max allowed users and dates when subscription changes
   useEffect(() => {
     if (formData.subscription_id > 0) {
       const subscription = getSubscriptionById(formData.subscription_id);
       if (subscription) {
+        const { start_date, end_date } = calculateDates(formData.subscription_id, isRenewing);
         setFormData(prev => ({
           ...prev,
-          max_allowed_users: subscription.max_allowed_users
+          max_allowed_users: subscription.max_allowed_users,
+          start_date,
+          end_date
         }));
       }
     }
-  }, [formData.subscription_id, getSubscriptionById]);
+  }, [formData.subscription_id, getSubscriptionById, isRenewing, subscriptions, selectedLicense]);
 
   const handleCreate = async () => {
     if (!formData.client_comp_code || formData.subscription_id === 0 || formData.main_app_id === 0) {
@@ -125,6 +166,8 @@ const Licenses = () => {
       max_allowed_users: license.max_allowed_users,
       form_end_point: license.form_end_point,
       is_active: license.is_active,
+      start_date: license.start_date,
+      end_date: license.end_date,
     });
     setIsEditDialogOpen(true);
   };
@@ -140,8 +183,8 @@ const Licenses = () => {
       subscription_id: formData.subscription_id,
       main_app_id: formData.main_app_id,
       max_allowed_users: formData.max_allowed_users,
-      start_date: selectedLicense.start_date,
-      end_date: selectedLicense.end_date,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
       form_end_point: formData.form_end_point,
       is_active: formData.is_active,
     };
@@ -150,6 +193,7 @@ const Licenses = () => {
     if (success) {
       setIsEditDialogOpen(false);
       setSelectedLicense(null);
+      setIsRenewing(false);
       resetForm();
     }
   };
@@ -178,6 +222,8 @@ const Licenses = () => {
       max_allowed_users: 0,
       form_end_point: "",
       is_active: true,
+      start_date: "",
+      end_date: "",
     });
   };
 
@@ -372,22 +418,22 @@ const Licenses = () => {
 
             {/* Start Date */}
             <div className="space-y-2">
-              <Label htmlFor="edit_start_date">Start Date</Label>
+              <Label htmlFor="start_date">Start Date</Label>
               <Input
-                id="edit_start_date"
+                id="start_date"
                 type="date"
-                value={selectedLicense?.start_date || ""}
+                value={formData.start_date}
                 disabled
               />
             </div>
 
             {/* End Date */}
             <div className="space-y-2">
-              <Label htmlFor="edit_end_date">End Date</Label>
+              <Label htmlFor="end_date">End Date</Label>
               <Input
-                id="edit_end_date"
+                id="end_date"
                 type="date"
-                value={selectedLicense?.end_date || ""}
+                value={formData.end_date}
                 disabled
               />
             </div>
@@ -524,7 +570,7 @@ const Licenses = () => {
               <Input
                 id="edit_start_date"
                 type="date"
-                value={selectedLicense?.start_date || ""}
+                value={formData.start_date}
                 disabled
               />
             </div>
@@ -535,7 +581,7 @@ const Licenses = () => {
               <Input
                 id="edit_end_date"
                 type="date"
-                value={selectedLicense?.end_date || ""}
+                value={formData.end_date}
                 disabled
               />
             </div>
