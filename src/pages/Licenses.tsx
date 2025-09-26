@@ -75,7 +75,7 @@ const Licenses = () => {
     return product ? product.main_app_name : `Product ${id}`;
   };
 
-  // Get subscription name by ID
+  // Get Subscription Type by ID
   const getSubscriptionNameById = (id: number) => {
     const subscription = subscriptions.find(s => s.subscription_id === id);
     return subscription ? subscription.subscription_name : `Subscription ${id}`;
@@ -322,7 +322,7 @@ const Licenses = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="subscription_id">Subscription Name</Label>
+              <Label htmlFor="subscription_id">Subscription Type</Label>
               <Select
                 value={formData.subscription_id?.toString() || ""}
                 onValueChange={(value) => setFormData({ ...formData, subscription_id: parseInt(value) })}
@@ -460,7 +460,7 @@ const Licenses = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit_subscription_id">Subscription Name</Label>
+              <Label htmlFor="edit_subscription_id">Subscription Type</Label>
               <Select
                 value={formData.subscription_id?.toString() || ""}
                 onValueChange={(value) => setFormData({ ...formData, subscription_id: parseInt(value) })}
